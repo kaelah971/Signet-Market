@@ -2053,6 +2053,48 @@ a:focus-visible {
   margin-top: 20px;
 }
 
+.why-validate-body {
+  max-width: 720px;
+  margin-bottom: 12px;
+  color: var(--text-sec);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.why-validate-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.why-validate-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(17, 17, 17, 0.94), rgba(8, 8, 8, 0.94));
+  padding: 20px;
+}
+
+.why-validate-card-icon {
+  margin-bottom: 12px;
+  font-size: 24px;
+}
+
+.why-validate-card-title {
+  margin-bottom: 8px;
+  color: var(--text);
+  font-family: var(--font-display), sans-serif;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.why-validate-card-text {
+  color: var(--text-muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
 @media (max-width: 900px) {
   .admin-groups {
     grid-template-columns: 1fr;
@@ -2074,6 +2116,10 @@ a:focus-visible {
   .history-row,
   .lb-row {
     min-width: 720px;
+  }
+
+  .why-validate-cards {
+    grid-template-columns: 1fr;
   }
 }
 

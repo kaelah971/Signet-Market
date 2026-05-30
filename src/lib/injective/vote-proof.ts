@@ -43,6 +43,12 @@ export async function broadcastVoteProof({
 
   const restEndpoint = injectiveTestnetEndpoints.rest ?? "https://testnet.sentry.lcd.injective.network";
 
+  console.warn("[vote proof:before account query]", {
+    walletAddress,
+    chainId: injectiveTestnetChainId,
+    network: "testnet",
+  });
+
   const signDocResponse = await fetch("/api/injective/build-vote-tx", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -53,12 +59,23 @@ export async function broadcastVoteProof({
     }),
   });
 
+  const signDocBody = (await signDocResponse.json().catch(() => ({}))) as { error?: string; message?: string };
+
   if (!signDocResponse.ok) {
-    const errorBody = (await signDocResponse.json().catch(() => ({}))) as { error?: string };
-    throw new Error(`Vote proof could not query Injective testnet account details. ${errorBody.error ?? "Check testnet RPC/LCD configuration."}`);
+    console.warn("[vote proof: before wallet prompt]");
+
+    if (signDocBody.error === "account-not-found") {
+      throw new Error(
+        "This wallet has not been activated on Injective testnet yet. Please fund it with testnet INJ from the faucet, then try voting again.",
+      );
+    }
+
+    throw new Error(
+      `Vote proof could not prepare this wallet for signing. ${signDocBody.error ?? signDocBody.message ?? "Please reconnect Keplr, confirm Injective testnet is selected, and try again."}`,
+    );
   }
 
-  const signDocData = (await signDocResponse.json()) as {
+  const signDocData = signDocBody as {
     chainId: string;
     accountNumber: string;
     bodyBytes: number[];

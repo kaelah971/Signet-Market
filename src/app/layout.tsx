@@ -3,9 +3,9 @@ import { WalletProvider } from "@/components/wallet/wallet-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Research Market - Proof-of-Research on Injective",
+  title: "Signet Markets - Proof-of-Research on Injective",
   description:
-    "AI finds claims. Humans validate them. Injective records the credibility trail.",
+    "AI finds claims. Validators vote. Injective records the signal.",
 };
 
 export default function RootLayout({

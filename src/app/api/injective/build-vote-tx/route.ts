@@ -41,10 +41,23 @@ export async function POST(request: Request) {
       authInfoBytes: Array.from(new Uint8Array(cosmosSignDoc.authInfoBytes)),
     });
   } catch (error) {
-    console.error("[build-vote-tx API error]", error);
+    const message = error instanceof Error ? error.message : String(error ?? "");
+    const lowerMessage = message.toLowerCase();
+
+    console.warn("[build-vote-tx API error]", { message, raw: error });
+
+    if (
+      lowerMessage.includes("account not found") ||
+      lowerMessage.includes("does not exist")
+    ) {
+      return NextResponse.json(
+        { error: "account-not-found", message },
+        { status: 404 },
+      );
+    }
 
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to build vote proof transaction." },
+      { error: message || "Failed to build vote proof transaction." },
       { status: 500 },
     );
   }

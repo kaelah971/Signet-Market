@@ -1,40 +1,25 @@
-"use client";
-
-import { useCallback, useState } from "react";
-import { MarketVotingSection } from "@/components/markets/market-voting-section";
 import { ConnectWalletButton } from "@/components/wallet/connect-wallet-button";
-import { ValidatorProfileSection } from "@/components/profile/validator-profile-section";
-import { AIMarketGenerator } from "@/components/admin/ai-market-generator";
+import Link from "next/link";
 
 export default function Home() {
-  const [profileRefreshKey, setProfileRefreshKey] = useState(0);
-  const [marketRefreshKey, setMarketRefreshKey] = useState(0);
-
-  const handleResolveComplete = useCallback(() => {
-    setProfileRefreshKey((key) => key + 1);
-  }, []);
-
-  const handleMarketsPublished = useCallback(() => {
-    setMarketRefreshKey((key) => key + 1);
-  }, []);
   return (
     <main>
       <nav className="site-nav" aria-label="Main navigation">
-        <a className="nav-logo" href="#top">
-          Research<span>Market</span>
+        <a className="nav-logo" href="/">
+          Signet<span>Markets</span>
         </a>
-        <a className="nav-link active" href="#dashboard">
+        <Link className="nav-link active" href="/connectwallet">
           Markets
-        </a>
-        <a className="nav-link" href="#leaderboard">
+        </Link>
+        <Link className="nav-link" href="/dashboard">
           Leaderboard
-        </a>
-        <a className="nav-link" href="#profile">
+        </Link>
+        <Link className="nav-link" href="/dashboard">
           Profile
-        </a>
-        <a className="nav-link" href="#docs">
+        </Link>
+        <Link className="nav-link" href="#docs">
           Docs
-        </a>
+        </Link>
         <div className="nav-spacer" />
         <div className="nav-live">
           <div className="live-dot" />
@@ -49,18 +34,18 @@ export default function Home() {
         <div className="hero-inner">
           <div className="hero-eyebrow">PROOF-OF-RESEARCH · INJECTIVE TESTNET</div>
           <h1 className="hero-headline">
-            Research claims
+            Turn crypto noise
             <br />
-            deserve a <em>verdict.</em>
+            into <em>validated signal.</em>
           </h1>
           <p className="hero-sub">
-            AI surfaces the claims. You validate them. Every outcome is recorded on Injective - building a transparent credibility trail for crypto research.
+            AI surfaces fresh crypto research claims. Validators vote on what is accurate, false, misleading, or unverifiable. Every vote can be verified on Injective testnet.
           </p>
           <div className="hero-ctas">
-            <a className="btn-primary" href="#dashboard">
+            <Link className="btn-primary" href="/connectwallet">
               Explore Markets →
-            </a>
-            <a className="btn-ghost" href="#detail">
+            </Link>
+            <a className="btn-ghost" href="#docs">
               How it works
             </a>
           </div>
@@ -89,27 +74,12 @@ export default function Home() {
 
       <hr className="divider" />
 
-      <AIMarketGenerator onMarketsPublished={handleMarketsPublished} />
-
-      <hr className="divider" />
-
-      <MarketVotingSection
-        key={`markets-${marketRefreshKey}`}
-        onResolveComplete={handleResolveComplete}
-      />
-
-      <hr className="divider" />
-
-      <ValidatorProfileSection key={`profile-${profileRefreshKey}`} />
-
-      <hr className="divider" />
-
       <footer className="site-footer" id="docs">
         <div className="footer-brand">
-          Research<span>Market</span>
+          Signet<span>Markets</span>
         </div>
         <div className="footer-meta">
-          Built for the Injective Solo AI Builder Sprint · Testnet v1.0
+          Built on Injective Testnet · v1.0
           <br />
           <a href="#docs">Docs</a> · <a href="#docs">GitHub</a> · <a href="#docs">Injective Testnet</a>
         </div>

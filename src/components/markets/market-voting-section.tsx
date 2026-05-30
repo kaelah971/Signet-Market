@@ -11,8 +11,6 @@ import {
 import {
   closeMarket,
   fastForwardMarket,
-  insertVote,
-  isDuplicateVoteError,
   loadMarketsWithVotes,
   mapSupabaseVoteToUserVote,
   resolveMarket,
@@ -21,8 +19,8 @@ import {
 import type { Market, UserVote, VoteOption } from "@/types/market";
 import type { SupabaseVote } from "@/types/supabase";
 import { shortenInjectiveAddress, useWallet } from "@/components/wallet/wallet-provider";
-import { broadcastVoteProof } from "@/lib/injective/vote-proof";
 import { isAdminWallet } from "@/lib/admin";
+import { injectiveTestnetChainId } from "@/lib/injective/testnet";
 
 const voteOptions: VoteOption[] = ["Accurate", "False", "Misleading", "Unverifiable"];
 
@@ -218,12 +216,12 @@ function ConfirmationModal({
   onCancel: () => void;
   onConfirm: () => void;
   selectedOption: VoteOption;
-  submittingStage?: "broadcasting" | "saving";
+  submittingStage?: "signing" | "saving";
   walletAddress: string;
 }) {
   const buttonLabel = isSubmitting
-    ? submittingStage === "broadcasting"
-      ? "Creating Injective testnet proof..."
+    ? submittingStage === "signing"
+      ? "Signing with Keplr..."
       : submittingStage === "saving"
         ? "Saving vote..."
         : "Submitting..."
@@ -243,7 +241,7 @@ function ConfirmationModal({
           <strong>{shortenInjectiveAddress(walletAddress)}</strong>
         </div>
         <p>
-          Confirming will create an Injective testnet vote proof transaction before saving your vote.
+          Sign with Keplr to cast this vote. Your signature will be anchored on Injective testnet by the relayer.
         </p>
         <div className="confirm-actions">
           <button className="btn-ghost" disabled={isSubmitting} onClick={onCancel} type="button">
@@ -717,7 +715,7 @@ export function MarketVotingSection({
   const [adminMessage, setAdminMessage] = useState<string | null>(null);
   const [adminActionId, setAdminActionId] = useState<string | null>(null);
   const [isSubmittingVote, setIsSubmittingVote] = useState(false);
-  const [voteStage, setVoteStage] = useState<"broadcasting" | "saving" | null>(null);
+  const [voteStage, setVoteStage] = useState<"signing" | "saving" | null>(null);
   const [submittedTxHash, setSubmittedTxHash] = useState<string | null>(null);
 
   const selectedMarket = useMemo(
@@ -727,6 +725,15 @@ export function MarketVotingSection({
   const isAdmin = isAdminWallet(address);
   const selectedUserVote = address && selectedMarket ? userVotes[getUserVoteKey(address, selectedMarket.id)] : undefined;
   const openMarketCount = markets.filter((market) => getStableMarketAvailability(market, mounted) === "open").length;
+  const [activeFilter, setActiveFilter] = useState<"open" | "all">("open");
+
+  const displayedMarkets = useMemo(
+    () =>
+      activeFilter === "open"
+        ? markets.filter((market) => getStableMarketAvailability(market, mounted) === "open")
+        : markets,
+    [markets, mounted, activeFilter],
+  );
 
   const refreshMarketData = useCallback(async (shouldApply: () => boolean = () => true) => {
     setIsLoadingMarkets(true);
@@ -1056,32 +1063,57 @@ export function MarketVotingSection({
     }
 
     setIsSubmittingVote(true);
-    setVoteStage("broadcasting");
+    setVoteStage("signing");
 
     void (async () => {
-      let txHash: string | null = null;
+      const keplrWindow = typeof window === "undefined" ? undefined : (window as unknown as {
+        keplr?: {
+          signArbitrary: (
+            chainId: string,
+            signerAddress: string,
+            data: string,
+          ) => Promise<{ pub_key: { type: string; value: string }; signature: string }>;
+        };
+      });
+      const keplr = keplrWindow?.keplr;
 
-      console.warn("[vote proof:start]", { marketId: pendingVote.marketId, voteOption: pendingVote.option, walletAddress: address });
-
-      try {
-        txHash = await broadcastVoteProof({
-          walletAddress: address,
-          marketId: pendingVote.marketId,
-          voteOption: pendingVote.option,
-        });
-      } catch (broadcastError) {
-        const message = broadcastError instanceof Error ? broadcastError.message : String(broadcastError);
-
-        console.warn("[vote proof:failed]", { message, raw: broadcastError });
+      if (!keplr) {
         setPendingVote(null);
         setIsSubmittingVote(false);
         setVoteStage(null);
+        setMessage("Vote proof could not access the connected Keplr wallet.");
 
-        if (process.env.NODE_ENV === "development") {
-          setMessage(`Vote proof transaction failed: ${message}`);
-        } else {
-          setMessage("Vote proof transaction failed. Vote was not saved.");
-        }
+        return;
+      }
+
+      const timestamp = new Date().toISOString();
+      const voteMessage = [
+        "Signet Markets Vote",
+        "",
+        `marketId: ${pendingVote.marketId}`,
+        `voteOption: ${pendingVote.option}`,
+        `voterWallet: ${address}`,
+        `timestamp: ${timestamp}`,
+      ].join("\n");
+
+      let signature: string;
+
+      try {
+        const signResponse = await keplr.signArbitrary(
+          injectiveTestnetChainId,
+          address,
+          voteMessage,
+        );
+
+        signature = signResponse.signature;
+      } catch (signError) {
+        const message = signError instanceof Error ? signError.message : String(signError);
+
+        console.warn("[vote proof: signature cancelled]", { message });
+        setPendingVote(null);
+        setIsSubmittingVote(false);
+        setVoteStage(null);
+        setMessage("Wallet signature was cancelled. Vote was not submitted.");
 
         return;
       }
@@ -1089,19 +1121,49 @@ export function MarketVotingSection({
       setVoteStage("saving");
 
       try {
-        const insertedVote = await insertVote({
-          marketId: pendingVote.marketId,
-          selectedOption: pendingVote.option,
-          txHash,
-          walletAddress: address,
+        const apiResponse = await fetch("/api/votes/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            marketId: pendingVote.marketId,
+            voteOption: pendingVote.option,
+            voterWallet: address,
+            signedMessage: voteMessage,
+            signature,
+            timestamp,
+          }),
         });
-        const nextUserVote = insertedVote
-          ? mapSupabaseVoteToUserVote(insertedVote)
+
+        const apiBody = (await apiResponse.json()) as {
+          ok?: boolean;
+          error?: string;
+          txHash?: string;
+          vote?: { id: string; market_id: string; wallet_address: string; selected_option: string; tx_hash: string; created_at: string };
+        };
+
+        if (!apiResponse.ok || !apiBody.ok) {
+          setPendingVote(null);
+          setIsSubmittingVote(false);
+          setVoteStage(null);
+          setMessage(apiBody.error ?? "Vote could not be anchored on Injective testnet. Please try again.");
+
+          return;
+        }
+
+        const txHash = apiBody.txHash ?? "";
+        const nextUserVote = apiBody.vote
+          ? {
+              marketId: apiBody.vote.market_id,
+              walletAddress: apiBody.vote.wallet_address,
+              option: pendingVote.option,
+              submittedAt: apiBody.vote.created_at ?? new Date().toISOString(),
+              txHash: apiBody.vote.tx_hash ?? undefined,
+            }
           : {
               marketId: pendingVote.marketId,
               option: pendingVote.option,
               submittedAt: new Date().toISOString(),
-              txHash: txHash ?? undefined,
+              txHash: txHash || undefined,
               walletAddress: address,
             };
 
@@ -1131,18 +1193,12 @@ export function MarketVotingSection({
 
         setPendingVote(null);
         setSubmittedVote(pendingVote);
-        setSubmittedTxHash(txHash);
+        setSubmittedTxHash(txHash || null);
         setMessage("Vote submitted and verified on Injective testnet.");
       } catch (error) {
         console.error("Failed to save vote", error);
         setPendingVote(null);
-        setMessage(
-          txHash
-            ? `Vote proof was created (${txHash.slice(0, 10)}...${txHash.slice(-6)}), but saving the vote failed.`
-            : isDuplicateVoteError(error)
-              ? "You already voted on this market."
-              : "Vote failed. Please try again.",
-        );
+        setMessage("Vote failed. Please try again.");
       } finally {
         setIsSubmittingVote(false);
         setVoteStage(null);
@@ -1155,7 +1211,7 @@ export function MarketVotingSection({
       <section className="section" id="dashboard">
         <div className="section-header">
           <div>
-            <div className="section-title">Daily Research Markets</div>
+            <div className="section-title">Daily Signet Markets</div>
             <div className="section-heading">Open Claims - Testnet MVP</div>
           </div>
           <a className="section-link" href="#profile">
@@ -1164,10 +1220,18 @@ export function MarketVotingSection({
         </div>
 
         <div className="tab-row" aria-label="Market filters">
-          <button className="tab active" type="button">
+          <button
+            className={`tab${activeFilter === "open" ? " active" : ""}`}
+            onClick={() => setActiveFilter("open")}
+            type="button"
+          >
             Open ({openMarketCount})
           </button>
-          <button className="tab" type="button">
+          <button
+            className={`tab${activeFilter === "all" ? " active" : ""}`}
+            onClick={() => setActiveFilter("all")}
+            type="button"
+          >
             All ({markets.length})
           </button>
         </div>
@@ -1208,15 +1272,18 @@ export function MarketVotingSection({
           </div>
         </div>
 
-        {isLoadingMarkets && <div className="agent-log empty-state">Loading markets...</div>}
-        {loadError && <div className="agent-log empty-state">{loadError}</div>}
-        {!isLoadingMarkets && !loadError && markets.length === 0 && (
+        {!isLoadingMarkets && !loadError && displayedMarkets.length === 0 && activeFilter === "open" && (
+          <div className="agent-log empty-state">
+            No open claims right now. New AI-generated markets will appear here when published.
+          </div>
+        )}
+        {!isLoadingMarkets && !loadError && displayedMarkets.length === 0 && activeFilter === "all" && (
           <div className="agent-log empty-state">No markets found.</div>
         )}
 
-        {!isLoadingMarkets && !loadError && markets.length > 0 && (
+        {!isLoadingMarkets && !loadError && displayedMarkets.length > 0 && (
           <div className="market-grid">
-            {markets.map((market) => {
+            {displayedMarkets.map((market) => {
             const availability = getStableMarketAvailability(market, mounted);
             const isUnavailable = availability !== "open";
 
