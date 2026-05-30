@@ -17,8 +17,8 @@ export default function Home() {
         <Link className="nav-link" href="/dashboard">
           Profile
         </Link>
-        <Link className="nav-link" href="#docs">
-          Docs
+        <Link className="nav-link" href="/how-it-works">
+          How it Works
         </Link>
         <div className="nav-spacer" />
         <div className="nav-live">
@@ -45,9 +45,9 @@ export default function Home() {
             <Link className="btn-primary" href="/connectwallet">
               Explore Markets →
             </Link>
-            <a className="btn-ghost" href="#docs">
+            <Link className="btn-ghost" href="/how-it-works">
               How it works
-            </a>
+            </Link>
           </div>
           <div className="hero-stats">
             {[

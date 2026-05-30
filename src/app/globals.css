@@ -2095,6 +2095,90 @@ a:focus-visible {
   line-height: 1.6;
 }
 
+.guide-container {
+  max-width: 800px;
+}
+
+.guide-card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(17, 17, 17, 0.94), rgba(8, 8, 8, 0.94));
+  padding: 28px 32px;
+}
+
+.guide-card p {
+  margin-top: 14px;
+  color: var(--text-sec);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.guide-intro {
+  border-color: rgba(251, 222, 55, 0.12);
+}
+
+.guide-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.guide-step {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  align-items: start;
+  gap: 18px;
+  border-bottom: 1px solid var(--border-sub);
+  padding: 18px 0;
+}
+
+.guide-step:last-child {
+  border-bottom: 0;
+}
+
+.guide-step-num {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(251, 222, 55, 0.15);
+  border-radius: 10px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.guide-step-title {
+  margin-bottom: 4px;
+  color: var(--text);
+  font-family: var(--font-display), sans-serif;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.guide-step-desc {
+  color: var(--text-sec);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.guide-vote-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.guide-cta-text {
+  max-width: 480px;
+  margin: 0 auto;
+  color: var(--text-sec);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
 @media (max-width: 900px) {
   .admin-groups {
     grid-template-columns: 1fr;
@@ -2119,6 +2203,10 @@ a:focus-visible {
   }
 
   .why-validate-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .guide-vote-grid {
     grid-template-columns: 1fr;
   }
 }
