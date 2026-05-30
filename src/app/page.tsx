@@ -1,65 +1,119 @@
-import Image from "next/image";
+"use client";
+
+import { useCallback, useState } from "react";
+import { MarketVotingSection } from "@/components/markets/market-voting-section";
+import { ConnectWalletButton } from "@/components/wallet/connect-wallet-button";
+import { ValidatorProfileSection } from "@/components/profile/validator-profile-section";
+import { AIMarketGenerator } from "@/components/admin/ai-market-generator";
 
 export default function Home() {
+  const [profileRefreshKey, setProfileRefreshKey] = useState(0);
+  const [marketRefreshKey, setMarketRefreshKey] = useState(0);
+
+  const handleResolveComplete = useCallback(() => {
+    setProfileRefreshKey((key) => key + 1);
+  }, []);
+
+  const handleMarketsPublished = useCallback(() => {
+    setMarketRefreshKey((key) => key + 1);
+  }, []);
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <main>
+      <nav className="site-nav" aria-label="Main navigation">
+        <a className="nav-logo" href="#top">
+          Research<span>Market</span>
+        </a>
+        <a className="nav-link active" href="#dashboard">
+          Markets
+        </a>
+        <a className="nav-link" href="#leaderboard">
+          Leaderboard
+        </a>
+        <a className="nav-link" href="#profile">
+          Profile
+        </a>
+        <a className="nav-link" href="#docs">
+          Docs
+        </a>
+        <div className="nav-spacer" />
+        <div className="nav-live">
+          <div className="live-dot" />
+          TESTNET LIVE
+        </div>
+        <ConnectWalletButton />
+      </nav>
+
+      <section className="hero" id="top">
+        <div className="hero-grid" />
+        <div className="hero-glow" />
+        <div className="hero-inner">
+          <div className="hero-eyebrow">PROOF-OF-RESEARCH · INJECTIVE TESTNET</div>
+          <h1 className="hero-headline">
+            Research claims
+            <br />
+            deserve a <em>verdict.</em>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="hero-sub">
+            AI surfaces the claims. You validate them. Every outcome is recorded on Injective - building a transparent credibility trail for crypto research.
           </p>
+          <div className="hero-ctas">
+            <a className="btn-primary" href="#dashboard">
+              Explore Markets →
+            </a>
+            <a className="btn-ghost" href="#detail">
+              How it works
+            </a>
+          </div>
+          <div className="hero-stats">
+            {[
+              ["5", "Open Markets"],
+              ["89", "Validators"],
+              ["247", "Claims Resolved"],
+              ["74%", "Avg Accuracy"],
+            ].map(([value, label], index) => (
+              <div className="contents" key={label}>
+                {index > 0 && <div className="hero-divider" />}
+                <div className="hero-stat">
+                  <span className="hero-stat-val">{value}</span>
+                  <span className="hero-stat-lbl">{label}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="hero-scroll">
+          <div className="scroll-line" />
+          scroll
         </div>
-      </main>
-    </div>
+      </section>
+
+      <hr className="divider" />
+
+      <AIMarketGenerator onMarketsPublished={handleMarketsPublished} />
+
+      <hr className="divider" />
+
+      <MarketVotingSection
+        key={`markets-${marketRefreshKey}`}
+        onResolveComplete={handleResolveComplete}
+      />
+
+      <hr className="divider" />
+
+      <ValidatorProfileSection key={`profile-${profileRefreshKey}`} />
+
+      <hr className="divider" />
+
+      <footer className="site-footer" id="docs">
+        <div className="footer-brand">
+          Research<span>Market</span>
+        </div>
+        <div className="footer-meta">
+          Built for the Injective Solo AI Builder Sprint · Testnet v1.0
+          <br />
+          <a href="#docs">Docs</a> · <a href="#docs">GitHub</a> · <a href="#docs">Injective Testnet</a>
+        </div>
+      </footer>
+    </main>
   );
 }

@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research Market — Proof-of-Research on Injective</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:           #000000;
+    --surface:      #0A0A0A;
+    --elevated:     #111111;
+    --hover:        #161616;
+    --text:         #FFFFFF;
+    --text-sec:     #8A8A8A;
+    --text-muted:   #444444;
+    --accent:       #FBDE37;
+    --accent-dim:   rgba(251,222,55,0.08);
+    --accent-glow:  rgba(251,222,55,0.15);
+    --border:       rgba(255,255,255,0.08);
+    --border-sub:   rgba(255,255,255,0.04);
+    --accurate:     #2DD4A0;
+    --false:        #FF4D6A;
+    --misleading:   #F59E0B;
+    --unverif:      #6B7280;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-serif:   'Instrument Serif', serif;
+    --font-mono:    'JetBrains Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-display);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Noise overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 58px;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    padding: 0 32px;
+    gap: 8px;
+  }
+  .nav-logo {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 17px;
+    color: var(--text);
+    text-decoration: none;
+    margin-right: 24px;
+    letter-spacing: -0.01em;
+  }
+  .nav-logo span { color: var(--accent); }
+  .nav-link {
+    font-size: 13px;
+    color: var(--text-sec);
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 150ms;
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: var(--font-display);
+  }
+  .nav-link:hover { color: var(--text); background: var(--elevated); }
+  .nav-link.active { color: var(--accent); background: var(--accent-dim); }
+  .nav-spacer { flex: 1; }
+  .nav-live {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-right: 12px;
+  }
+  .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accurate);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(45,212,160,0.4); }
+    50% { opacity: 0.7; box-shadow: 0 0 0 5px rgba(45,212,160,0); }
+  }
+  .wallet-btn {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-sec);
+    cursor: pointer;
+    transition: all 150ms;
+  }
+  .wallet-btn:hover { border-color: rgba(251,222,55,0.3); color: var(--accent); }
+
+  /* ─── HERO ─── */
+  .hero {
+    padding-top: 58px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 80px 80px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+  }
+  .hero-glow {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -60%);
+    width: 600px; height: 400px;
+    background: radial-gradient(ellipse, rgba(251,222,55,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
+    padding: 0 32px;
+  }
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+  .hero-eyebrow::before,
+  .hero-eyebrow::after {
+    content: '';
+    height: 1px;
+    width: 40px;
+    background: var(--border);
+  }
+  .hero-headline {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: clamp(48px, 7vw, 80px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 24px;
+    animation: fadeUp 700ms cubic-bezier(0.16,1,0.3,1) both;
+  }
+  .hero-headline em { color: var(--accent); font-style: normal; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .hero-sub {
+    font-size: 17px;
+    color: var(--text-sec);
+    line-height: 1.65;
+    max-width: 520px;
+    margin: 0 auto 40px;
+    animation: fadeUp 700ms cubic-bezier(0.16,1,0.3,1) 120ms both;
+  }
+  .hero-ctas {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+    animation: fadeUp 700ms cubic-bezier(0.16,1,0.3,1) 200ms both;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13px;
+    padding: 11px 28px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    transition: all 150ms;
+    letter-spacing: 0.01em;
+  }
+  .btn-primary:hover {
+    background: #FFE55C;
+    box-shadow: 0 0 24px var(--accent-glow);
+    transform: translateY(-1px);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-sec);
+    font-family: var(--font-display);
+    font-size: 13px;
+    padding: 11px 24px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 150ms;
+  }
+  .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+  .hero-stats {
+    margin-top: 64px;
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    animation: fadeUp 700ms cubic-bezier(0.16,1,0.3,1) 300ms both;
+  }
+  .hero-stat {
+    text-align: center;
+  }
+  .hero-stat-val {
+    font-family: var(--font-mono);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    display: block;
+  }
+  .hero-stat-lbl {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: block;
+    margin-top: 4px;
+  }
+  .hero-divider {
+    width: 1px;
+    background: var(--border);
+    align-self: stretch;
+  }
+  .hero-scroll {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    animation: fadeIn 1s 1s both;
+  }
+  .scroll-line {
+    width: 1px;
+    height: 32px;
+    background: linear-gradient(to bottom, var(--text-muted), transparent);
+    animation: scrollLine 2s ease infinite;
+  }
+  @keyframes scrollLine {
+    0% { transform: scaleY(0); transform-origin: top; }
+    50% { transform: scaleY(1); transform-origin: top; }
+    51% { transform: scaleY(1); transform-origin: bottom; }
+    100% { transform: scaleY(0); transform-origin: bottom; }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+
+  /* ─── SECTION WRAPPER ─── */
+  .section {
+    padding: 80px 32px;
+    max-width: 1120px;
+    margin: 0 auto;
+  }
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+  .section-title {
+    font-size: 13px;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .section-heading {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    margin-top: 6px;
+  }
+  .section-link {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-sec);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: color 150ms;
+  }
+  .section-link:hover { color: var(--accent); }
+
+  /* ─── AGENT LOG ─── */
+  .agent-log {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 48px;
+  }
+  .agent-log-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border-sub);
+    background: var(--elevated);
+  }
+  .agent-log-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-sec);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .agent-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: accentPulse 2s infinite;
+  }
+  @keyframes accentPulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .agent-log-body {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+  }
+  .agent-log-body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg,transparent 0,transparent 3px,rgba(255,255,255,0.008) 3px,rgba(255,255,255,0.008) 4px);
+    pointer-events: none;
+  }
+  .log-entry {
+    display: flex;
+    gap: 16px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .log-time { color: var(--accent); min-width: 44px; }
+  .log-text { color: var(--text-sec); }
+  .log-text span { color: var(--text); }
+  .log-entry.typing .log-text::after {
+    content: '▌';
+    animation: blink 1s step-end infinite;
+    color: var(--accent);
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* ─── MARKET GRID ─── */
+  .market-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+  .market-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 20px 20px 24px;
+    cursor: pointer;
+    position: relative;
+    transition: border-color 200ms, transform 200ms, background 200ms;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .market-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 16px; bottom: 16px;
+    width: 3px;
+    border-radius: 0 2px 2px 0;
+    background: var(--accent);
+    transition: opacity 200ms;
+  }
+  .market-card.resolved::before { background: var(--accurate); }
+  .market-card:hover {
+    border-color: rgba(255,255,255,0.14);
+    transform: translateY(-2px);
+    background: var(--elevated);
+  }
+  .market-card:nth-child(1) { animation: fadeUp 500ms cubic-bezier(0.16,1,0.3,1) both; }
+  .market-card:nth-child(2) { animation: fadeUp 500ms cubic-bezier(0.16,1,0.3,1) 80ms both; }
+  .market-card:nth-child(3) { animation: fadeUp 500ms cubic-bezier(0.16,1,0.3,1) 160ms both; }
+  .market-card:nth-child(4) { animation: fadeUp 500ms cubic-bezier(0.16,1,0.3,1) 240ms both; }
+  .market-card:nth-child(5) { animation: fadeUp 500ms cubic-bezier(0.16,1,0.3,1) 320ms both; }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .badge-open {
+    background: rgba(251,222,55,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(251,222,55,0.2);
+  }
+  .badge-open .badge-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: accentPulse 2s infinite;
+  }
+  .badge-resolved {
+    background: rgba(45,212,160,0.08);
+    color: var(--accurate);
+    border: 1px solid rgba(45,212,160,0.2);
+  }
+  .badge-closed {
+    background: rgba(255,255,255,0.04);
+    color: var(--text-muted);
+    border: 1px solid var(--border-sub);
+  }
+  .market-timer {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .market-timer.urgent { color: var(--false); animation: blink 2s ease infinite; }
+
+  .market-claim {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.5;
+    flex: 1;
+  }
+
+  .market-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .meta-conf { color: var(--accent); }
+
+  .vote-bar {
+    display: flex;
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+    gap: 2px;
+  }
+  .vb-accurate    { background: var(--accurate); }
+  .vb-false       { background: var(--false); }
+  .vb-misleading  { background: var(--misleading); }
+  .vb-unverif     { background: rgba(107,114,128,0.4); }
+
+  .card-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .vote-count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .vote-count span { color: var(--text-sec); }
+  .outcome-pill {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .pill-accurate   { background: rgba(45,212,160,0.1); color: var(--accurate); border: 1px solid rgba(45,212,160,0.25); }
+  .pill-misleading { background: rgba(245,158,11,0.1); color: var(--misleading); border: 1px solid rgba(245,158,11,0.25); }
+
+  /* ─── MARKET DETAIL ─── */
+  .detail-section {
+    background: linear-gradient(180deg, #050505 0%, var(--bg) 100%);
+    border-top: 1px solid var(--border-sub);
+    padding: 80px 32px;
+  }
+  .detail-inner {
+    max-width: 1120px;
+    margin: 0 auto;
+  }
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    border: none;
+    background: none;
+    margin-bottom: 32px;
+    transition: color 150ms;
+  }
+  .back-btn:hover { color: var(--text-sec); }
+
+  .detail-header {
+    margin-bottom: 32px;
+  }
+  .detail-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .detail-id {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .detail-claim {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: clamp(24px, 3.5vw, 36px);
+    line-height: 1.25;
+    color: var(--text);
+    max-width: 820px;
+    margin-bottom: 20px;
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .detail-grid { grid-template-columns: 1fr; }
+  }
+
+  .evidence-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .evidence-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-sub);
+    background: var(--elevated);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .confidence-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .conf-ring {
+    width: 32px; height: 32px;
+  }
+  .evidence-body {
+    padding: 20px;
+  }
+  .ai-summary {
+    font-size: 13px;
+    color: var(--text-sec);
+    line-height: 1.65;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-sub);
+  }
+  .sources-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+  .source-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-sub);
+    cursor: pointer;
+    transition: background 150ms;
+  }
+  .source-item:last-child { border-bottom: none; }
+  .source-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--accent);
+    min-width: 16px;
+    margin-top: 2px;
+  }
+  .source-info { flex: 1; }
+  .source-title {
+    font-size: 12px;
+    color: var(--text-sec);
+    margin-bottom: 2px;
+    line-height: 1.4;
+  }
+  .source-url {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+  .source-icon {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* Vote panel */
+  .vote-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    position: sticky;
+    top: 74px;
+  }
+  .vote-panel-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-sub);
+    background: var(--elevated);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .vote-panel-body { padding: 20px; }
+  .vote-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .vote-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--elevated);
+    cursor: pointer;
+    transition: all 150ms;
+    text-align: left;
+    font-family: var(--font-display);
+    width: 100%;
+  }
+  .vote-option:hover { border-color: rgba(255,255,255,0.15); background: var(--hover); }
+  .vote-option.selected-accurate  { border-color: var(--accurate);    background: rgba(45,212,160,0.06); }
+  .vote-option.selected-false     { border-color: var(--false);       background: rgba(255,77,106,0.06); }
+  .vote-option.selected-misleading{ border-color: var(--misleading);  background: rgba(245,158,11,0.06); }
+  .vote-option.selected-unverif  { border-color: var(--unverif);    background: rgba(107,114,128,0.06); }
+  .vote-icon {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .icon-accurate   { background: rgba(45,212,160,0.12); }
+  .icon-false      { background: rgba(255,77,106,0.12); }
+  .icon-misleading { background: rgba(245,158,11,0.12); }
+  .icon-unverif    { background: rgba(107,114,128,0.12); }
+  .vote-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-sec);
+    flex: 1;
+  }
+  .vote-option.selected-accurate  .vote-label { color: var(--accurate); }
+  .vote-option.selected-false     .vote-label { color: var(--false); }
+  .vote-option.selected-misleading .vote-label { color: var(--misleading); }
+  .vote-option.selected-unverif  .vote-label  { color: var(--text-sec); }
+  .vote-pct {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .stake-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-top: 1px solid var(--border-sub);
+    border-bottom: 1px solid var(--border-sub);
+    margin-bottom: 16px;
+  }
+  .stake-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .stake-value {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .stake-value span {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-left: 4px;
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--accent);
+    color: #000;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    transition: all 150ms;
+    letter-spacing: 0.01em;
+  }
+  .submit-btn:hover {
+    background: #FFE55C;
+    box-shadow: 0 0 24px var(--accent-glow);
+    transform: translateY(-1px);
+  }
+  .wallet-note {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  /* Vote distribution in detail view */
+  .distribution {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 24px;
+  }
+  .dist-header {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+  }
+  .dist-row {
+    display: grid;
+    grid-template-columns: 120px 1fr 48px;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .dist-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-sec);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dist-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .dist-bar-bg {
+    height: 4px;
+    background: var(--elevated);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .dist-bar-fill { height: 100%; border-radius: 2px; transition: width 600ms cubic-bezier(0.16,1,0.3,1); }
+  .dist-pct {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: right;
+  }
+
+  /* ─── PROFILE / STATS ─── */
+  .profile-section {
+    background: var(--bg);
+    border-top: 1px solid var(--border-sub);
+    padding: 80px 32px;
+  }
+  .profile-inner {
+    max-width: 1120px;
+    margin: 0 auto;
+  }
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 40px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border-sub);
+  }
+  .profile-avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--elevated);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--accent);
+  }
+  .profile-addr {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--text);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .profile-joined {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .tier-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(251,222,55,0.08);
+    color: var(--accent);
+    border: 1px solid rgba(251,222,55,0.2);
+    margin-left: auto;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+  @media (max-width: 700px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .stat-value {
+    font-family: var(--font-mono);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+    display: block;
+  }
+  .stat-value.accent { color: var(--accent); }
+  .stat-value.accurate { color: var(--accurate); }
+  .stat-sub {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    display: block;
+  }
+
+  .history-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+  }
+  .history-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .history-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 120px 120px;
+    align-items: center;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-sub);
+    transition: background 150ms;
+    gap: 12px;
+  }
+  .history-row:last-child { border-bottom: none; }
+  .history-row:hover { background: var(--elevated); }
+  .history-row.header { background: var(--elevated); }
+  .history-row.header .h-cell {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .h-id {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .h-claim {
+    font-size: 12px;
+    color: var(--text-sec);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .h-vote { font-size: 11px; color: var(--text-sec); }
+  .h-result {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .result-correct { color: var(--accurate); }
+  .result-wrong   { color: var(--false); }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid var(--border-sub);
+    padding: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1120px;
+    margin: 0 auto;
+  }
+  .footer-brand {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 15px;
+    color: var(--text-sec);
+  }
+  .footer-brand span { color: var(--accent); }
+  .footer-meta {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    text-align: right;
+    line-height: 1.6;
+  }
+  .footer-meta a { color: var(--text-muted); text-decoration: none; }
+  .footer-meta a:hover { color: var(--text-sec); }
+
+  /* Tab switcher */
+  .tab-row {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 4px;
+    border-radius: 10px;
+    margin-bottom: 32px;
+    width: fit-content;
+  }
+  .tab {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 7px 16px;
+    border-radius: 7px;
+    cursor: pointer;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    transition: all 150ms;
+    border: none;
+    background: none;
+  }
+  .tab:hover { color: var(--text-sec); background: var(--elevated); }
+  .tab.active {
+    background: var(--elevated);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  /* Section divider */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border-sub);
+    margin: 0;
+  }
+
+  /* Tx reference */
+  .tx-ref {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    padding: 5px 10px;
+    background: var(--elevated);
+    border: 1px solid var(--border-sub);
+    border-radius: 6px;
+    margin-top: 12px;
+  }
+  .tx-hash { color: var(--accurate); }
+
+  /* Tooltip-like info chip */
+  .info-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    padding: 3px 8px;
+    border: 1px solid var(--border-sub);
+    border-radius: 4px;
+  }
+
+  /* Leaderboard */
+  .leaderboard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .lb-row {
+    display: grid;
+    grid-template-columns: 40px 180px 1fr 80px 80px;
+    align-items: center;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-sub);
+    transition: background 150ms;
+    gap: 12px;
+  }
+  .lb-row:last-child { border-bottom: none; }
+  .lb-row:not(.lb-header):hover { background: var(--elevated); }
+  .lb-row.lb-header {
+    background: var(--elevated);
+  }
+  .lb-header .lb-cell {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .lb-rank {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+  .lb-rank.top { color: var(--accent); }
+  .lb-addr {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-sec);
+  }
+  .lb-tier {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .lb-score {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .lb-acc {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accurate);
+    text-align: right;
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-logo">Research<span>Market</span></span>
+  <a class="nav-link active">Markets</a>
+  <a class="nav-link">Leaderboard</a>
+  <a class="nav-link">Profile</a>
+  <a class="nav-link">Docs</a>
+  <div class="nav-spacer"></div>
+  <div class="nav-live">
+    <div class="live-dot"></div>
+    TESTNET LIVE
+  </div>
+  <button class="wallet-btn">Connect Wallet</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div class="hero-eyebrow">PROOF-OF-RESEARCH · INJECTIVE TESTNET</div>
+    <h1 class="hero-headline">
+      Research claims<br>deserve a <em>verdict.</em>
+    </h1>
+    <p class="hero-sub">
+      AI surfaces the claims. You validate them. Every outcome is recorded on Injective — building a transparent credibility trail for crypto research.
+    </p>
+    <div class="hero-ctas">
+      <button class="btn-primary" onclick="scrollToDashboard()">Explore Markets →</button>
+      <button class="btn-ghost">How it works</button>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="hero-stat-val">5</span>
+        <span class="hero-stat-lbl">Open Markets</span>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-stat">
+        <span class="hero-stat-val">89</span>
+        <span class="hero-stat-lbl">Validators</span>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-stat">
+        <span class="hero-stat-val">247</span>
+        <span class="hero-stat-lbl">Claims Resolved</span>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-stat">
+        <span class="hero-stat-val">74%</span>
+        <span class="hero-stat-lbl">Avg Accuracy</span>
+      </div>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    scroll
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="section">
+
+  <!-- Page header + tabs -->
+  <div class="section-header">
+    <div>
+      <div class="section-title">Daily Research Markets</div>
+      <div class="section-heading">Today's Claims — May 25, 2026</div>
+    </div>
+    <a class="section-link">View all resolved →</a>
+  </div>
+
+  <div class="tab-row">
+    <button class="tab active">Open (5)</button>
+    <button class="tab">Closed (2)</button>
+    <button class="tab">Resolved (14)</button>
+  </div>
+
+  <!-- Agent log -->
+  <div class="agent-log">
+    <div class="agent-log-header">
+      <div class="agent-log-title">
+        <div class="agent-dot"></div>
+        AI Agent Activity Log — Today
+      </div>
+      <span style="font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);">AUTO-REFRESH 60s</span>
+    </div>
+    <div class="agent-log-body">
+      <div class="log-entry">
+        <span class="log-time">09:00</span>
+        <span class="log-text">scanned <span>28 sources</span> — Injective ecosystem updates, official channels, project announcements</span>
+      </div>
+      <div class="log-entry">
+        <span class="log-time">09:02</span>
+        <span class="log-text">extracted <span>14 candidate claims</span> — filtered by verifiability and relevance</span>
+      </div>
+      <div class="log-entry">
+        <span class="log-time">09:05</span>
+        <span class="log-text">ranked claims — <span>5 selected</span> for high confidence and primary source availability</span>
+      </div>
+      <div class="log-entry typing">
+        <span class="log-time">09:07</span>
+        <span class="log-text">created <span>5 validation markets</span> — evidence attached, timers set to 24h</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Market cards -->
+  <div class="market-grid">
+
+    <!-- Card 1 — Open -->
+    <div class="market-card" onclick="scrollToDetail()">
+      <div class="card-top">
+        <div class="badge badge-open"><div class="badge-dot"></div> Open</div>
+        <div class="market-timer">24h 18m left</div>
+      </div>
+      <div class="market-claim">
+        Project X announced a new Injective mainnet integration, confirmed via official documentation published within the last 24 hours.
+      </div>
+      <div class="market-meta">
+        <div class="meta-item"><span class="meta-conf">AI 78%</span></div>
+        <div class="meta-item">3 sources</div>
+        <div class="meta-item">18 votes</div>
+      </div>
+      <div class="vote-bar">
+        <div class="vb-accurate" style="width:62%"></div>
+        <div class="vb-misleading" style="width:18%"></div>
+        <div class="vb-false" style="width:12%"></div>
+        <div class="vb-unverif" style="width:8%"></div>
+      </div>
+      <div class="card-bottom">
+        <div class="vote-count"><span>11</span> → ACCURATE · <span>4</span> MISLEADING</div>
+      </div>
+    </div>
+
+    <!-- Card 2 — Open -->
+    <div class="market-card">
+      <div class="card-top">
+        <div class="badge badge-open"><div class="badge-dot"></div> Open</div>
+        <div class="market-timer urgent">8h 42m left</div>
+      </div>
+      <div class="market-claim">
+        Injective ecosystem TVL crossed $250M this week, as reported in the official Injective metrics dashboard.
+      </div>
+      <div class="market-meta">
+        <div class="meta-item"><span class="meta-conf">AI 91%</span></div>
+        <div class="meta-item">5 sources</div>
+        <div class="meta-item">34 votes</div>
+      </div>
+      <div class="vote-bar">
+        <div class="vb-accurate" style="width:76%"></div>
+        <div class="vb-unverif" style="width:15%"></div>
+        <div class="vb-false" style="width:9%"></div>
+      </div>
+      <div class="card-bottom">
+        <div class="vote-count"><span>26</span> → ACCURATE · <span>5</span> UNVERIFIABLE</div>
+      </div>
+    </div>
+
+    <!-- Card 3 — Open -->
+    <div class="market-card">
+      <div class="card-top">
+        <div class="badge badge-open"><div class="badge-dot"></div> Open</div>
+        <div class="market-timer">21h 05m left</div>
+      </div>
+      <div class="market-claim">
+        A new Injective developer grant program was publicly announced with a confirmed $5M allocation for builder incentives.
+      </div>
+      <div class="market-meta">
+        <div class="meta-item"><span class="meta-conf">AI 63%</span></div>
+        <div class="meta-item">2 sources</div>
+        <div class="meta-item">9 votes</div>
+      </div>
+      <div class="vote-bar">
+        <div class="vb-unverif" style="width:44%"></div>
+        <div class="vb-accurate" style="width:33%"></div>
+        <div class="vb-misleading" style="width:23%"></div>
+      </div>
+      <div class="card-bottom">
+        <div class="vote-count"><span>4</span> → UNVERIFIABLE · <span>3</span> ACCURATE</div>
+      </div>
+    </div>
+
+    <!-- Card 4 — Open -->
+    <div class="market-card">
+      <div class="card-top">
+        <div class="badge badge-open"><div class="badge-dot"></div> Open</div>
+        <div class="market-timer">16h 33m left</div>
+      </div>
+      <div class="market-claim">
+        Injective's daily spot trading volume exceeded $180M on May 24, 2026, based on on-chain data.
+      </div>
+      <div class="market-meta">
+        <div class="meta-item"><span class="meta-conf">AI 85%</span></div>
+        <div class="meta-item">4 sources</div>
+        <div class="meta-item">22 votes</div>
+      </div>
+      <div class="vote-bar">
+        <div class="vb-accurate" style="width:68%"></div>
+        <div class="vb-misleading" style="width:23%"></div>
+        <div class="vb-unverif" style="width:9%"></div>
+      </div>
+      <div class="card-bottom">
+        <div class="vote-count"><span>15</span> → ACCURATE · <span>5</span> MISLEADING</div>
+      </div>
+    </div>
+
+    <!-- Card 5 — Resolved -->
+    <div class="market-card resolved">
+      <div class="card-top">
+        <div class="badge badge-resolved">✓ Resolved</div>
+        <div class="market-timer">Yesterday</div>
+      </div>
+      <div class="market-claim">
+        DojoSwap published verifiable documentation confirming a partnership with Injective Labs on May 23, 2026.
+      </div>
+      <div class="market-meta">
+        <div class="meta-item"><span style="color: var(--accurate)">AI 88%</span></div>
+        <div class="meta-item">6 sources</div>
+        <div class="meta-item">51 votes</div>
+      </div>
+      <div class="vote-bar">
+        <div class="vb-accurate" style="width:82%"></div>
+        <div class="vb-misleading" style="width:11%"></div>
+        <div class="vb-false" style="width:7%"></div>
+      </div>
+      <div class="card-bottom">
+        <div class="vote-count"><span>42</span> validators rewarded</div>
+        <div class="outcome-pill pill-accurate">✓ Accurate</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- MARKET DETAIL -->
+<div id="detail" class="detail-section">
+  <div class="detail-inner">
+    <button class="back-btn" onclick="void(0)">← Back to Markets</button>
+
+    <div class="detail-header">
+      <div class="detail-meta">
+        <div class="badge badge-open"><div class="badge-dot"></div> Open</div>
+        <div class="detail-id">MARKET #047</div>
+        <div class="info-chip">Research Validation</div>
+        <div class="info-chip">24h window</div>
+        <div class="market-timer" style="margin-left: auto;">Closes in 24h 18m</div>
+      </div>
+      <div class="detail-claim">
+        "Project X announced a new Injective mainnet integration, confirmed via official documentation published within the last 24 hours."
+      </div>
+      <div class="tx-ref">
+        <span>On-chain ref:</span>
+        <span class="tx-hash">0x4f3a...b92e</span>
+        <span>· Injective Testnet</span>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+
+      <!-- Evidence panel -->
+      <div>
+        <div class="evidence-card">
+          <div class="evidence-header">
+            <span class="card-label">AI Evidence Summary</span>
+            <div class="confidence-badge">
+              <!-- Confidence ring SVG -->
+              <svg class="conf-ring" viewBox="0 0 36 36" fill="none">
+                <circle cx="18" cy="18" r="14" stroke="rgba(255,255,255,0.08)" stroke-width="2.5"/>
+                <circle cx="18" cy="18" r="14" stroke="#FBDE37" stroke-width="2.5"
+                  stroke-dasharray="70 88" stroke-dashoffset="22"
+                  stroke-linecap="round" transform="rotate(-90 18 18)"/>
+                <text x="18" y="22" text-anchor="middle" fill="#FBDE37"
+                  font-family="JetBrains Mono, monospace" font-size="8" font-weight="700">78%</text>
+              </svg>
+              Confidence
+            </div>
+          </div>
+          <div class="evidence-body">
+            <div class="ai-summary">
+              The agent identified an official announcement on the Project X developer portal dated May 24, 2026, referencing a confirmed Injective mainnet deployment. Cross-referenced against two secondary sources including the Injective ecosystem blog and a public GitHub commit. The claim is materially specific and primary sources are traceable. Confidence is moderate-high pending admin confirmation of the integration scope.
+            </div>
+            <div class="sources-label">Sources (3)</div>
+            <div class="source-item">
+              <span class="source-num">01</span>
+              <div class="source-info">
+                <div class="source-title">Project X Developer Portal — "Injective Mainnet Integration Announcement"</div>
+                <div class="source-url">projectx.io/blog/injective-mainnet</div>
+              </div>
+              <span class="source-icon">↗</span>
+            </div>
+            <div class="source-item">
+              <span class="source-num">02</span>
+              <div class="source-info">
+                <div class="source-title">Injective Ecosystem Blog — "New Integrations: May 2026"</div>
+                <div class="source-url">blog.injective.com/ecosystem-may-2026</div>
+              </div>
+              <span class="source-icon">↗</span>
+            </div>
+            <div class="source-item">
+              <span class="source-num">03</span>
+              <div class="source-info">
+                <div class="source-title">GitHub — injective-labs/ecosystem / commit 4f3ab9</div>
+                <div class="source-url">github.com/injective-labs/ecosystem</div>
+              </div>
+              <span class="source-icon">↗</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vote distribution -->
+        <div class="distribution">
+          <div class="dist-header">Current Vote Distribution — 18 validators</div>
+          <div class="dist-row">
+            <div class="dist-label"><div class="dist-dot" style="background:var(--accurate)"></div> Accurate</div>
+            <div class="dist-bar-bg"><div class="dist-bar-fill" style="width:62%; background:var(--accurate)"></div></div>
+            <div class="dist-pct" style="color:var(--accurate)">62%</div>
+          </div>
+          <div class="dist-row">
+            <div class="dist-label"><div class="dist-dot" style="background:var(--misleading)"></div> Misleading</div>
+            <div class="dist-bar-bg"><div class="dist-bar-fill" style="width:18%; background:var(--misleading)"></div></div>
+            <div class="dist-pct" style="color:var(--misleading)">18%</div>
+          </div>
+          <div class="dist-row">
+            <div class="dist-label"><div class="dist-dot" style="background:var(--false)"></div> False</div>
+            <div class="dist-bar-bg"><div class="dist-bar-fill" style="width:12%; background:var(--false)"></div></div>
+            <div class="dist-pct" style="color:var(--false)">12%</div>
+          </div>
+          <div class="dist-row">
+            <div class="dist-label"><div class="dist-dot" style="background:var(--unverif)"></div> Unverifiable</div>
+            <div class="dist-bar-bg"><div class="dist-bar-fill" style="width:8%; background:var(--unverif)"></div></div>
+            <div class="dist-pct">8%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vote panel -->
+      <div class="vote-panel">
+        <div class="vote-panel-header">
+          <span class="card-label">Cast Your Validation</span>
+          <span class="market-timer">24h 18m</span>
+        </div>
+        <div class="vote-panel-body">
+          <div class="vote-options">
+            <button class="vote-option selected-accurate" onclick="selectVote(this, 'accurate')">
+              <div class="vote-icon icon-accurate">✓</div>
+              <span class="vote-label">Accurate</span>
+              <span class="vote-pct">62%</span>
+            </button>
+            <button class="vote-option" onclick="selectVote(this, 'false')">
+              <div class="vote-icon icon-false">✗</div>
+              <span class="vote-label">False</span>
+              <span class="vote-pct">12%</span>
+            </button>
+            <button class="vote-option" onclick="selectVote(this, 'misleading')">
+              <div class="vote-icon icon-misleading">⚠</div>
+              <span class="vote-label">Misleading</span>
+              <span class="vote-pct">18%</span>
+            </button>
+            <button class="vote-option" onclick="selectVote(this, 'unverif')">
+              <div class="vote-icon icon-unverif">?</div>
+              <span class="vote-label">Unverifiable</span>
+              <span class="vote-pct">8%</span>
+            </button>
+          </div>
+
+          <div class="stake-row">
+            <div>
+              <div class="stake-label">Stake Amount</div>
+            </div>
+            <div class="stake-value">50 <span>pts</span></div>
+          </div>
+
+          <button class="submit-btn">Submit Validation</button>
+          <div class="wallet-note">Connect Injective testnet wallet to submit</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- PROFILE SECTION -->
+<div class="profile-section">
+  <div class="profile-inner">
+
+    <div class="section-header" style="margin-bottom: 24px;">
+      <div>
+        <div class="section-title">Validator Profile</div>
+        <div class="section-heading">Reputation Dashboard</div>
+      </div>
+    </div>
+
+    <div class="profile-header">
+      <div class="profile-avatar">RM</div>
+      <div>
+        <span class="profile-addr">inj1abc...xyz9</span>
+        <span class="profile-joined">JOINED MAY 2026 · INJECTIVE TESTNET</span>
+      </div>
+      <div class="tier-badge">Rising Validator</div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-label">Accuracy</span>
+        <span class="stat-value accurate">75%</span>
+        <span class="stat-sub">3 of 4 correct</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Markets Voted</span>
+        <span class="stat-value">4</span>
+        <span class="stat-sub">this week</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Streak</span>
+        <span class="stat-value accent">2</span>
+        <span class="stat-sub">correct in a row</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Points</span>
+        <span class="stat-value accent">340</span>
+        <span class="stat-sub">testnet pts</span>
+      </div>
+    </div>
+
+    <div class="history-label">Validation History</div>
+    <div class="history-table">
+      <div class="history-row header">
+        <div class="h-cell">Market</div>
+        <div class="h-cell">Claim</div>
+        <div class="h-cell">Your Vote</div>
+        <div class="h-cell">Result</div>
+      </div>
+      <div class="history-row">
+        <div class="h-id">#044</div>
+        <div class="h-claim">DojoSwap confirmed Injective partnership documentation</div>
+        <div class="h-vote" style="color:var(--accurate)">Accurate</div>
+        <div class="h-result result-correct">✓ Accurate</div>
+      </div>
+      <div class="history-row">
+        <div class="h-id">#041</div>
+        <div class="h-claim">Injective TVL crossed $200M in reported metrics</div>
+        <div class="h-vote" style="color:var(--accurate)">Accurate</div>
+        <div class="h-result result-correct">✓ Accurate</div>
+      </div>
+      <div class="history-row">
+        <div class="h-id">#038</div>
+        <div class="h-claim">Protocol Y announced $10M in ecosystem rewards</div>
+        <div class="h-vote" style="color:var(--false)">False</div>
+        <div class="h-result result-wrong">⚠ Misleading</div>
+      </div>
+      <div class="history-row">
+        <div class="h-id">#034</div>
+        <div class="h-claim">Injective daily active wallets surpassed 50,000</div>
+        <div class="h-vote" style="color:var(--accurate)">Accurate</div>
+        <div class="h-result result-correct">✓ Accurate</div>
+      </div>
+    </div>
+
+    <!-- Leaderboard preview -->
+    <div style="margin-top: 40px;">
+      <div class="history-label" style="margin-bottom: 12px;">Top Validators — All Time</div>
+      <div class="leaderboard">
+        <div class="lb-row lb-header">
+          <div class="lb-cell">#</div>
+          <div class="lb-cell">Validator</div>
+          <div class="lb-cell">Tier</div>
+          <div class="lb-cell">Points</div>
+          <div class="lb-cell">Accuracy</div>
+        </div>
+        <div class="lb-row">
+          <div class="lb-rank top">01</div>
+          <div class="lb-addr">inj1x7k...a3m4</div>
+          <div class="lb-tier" style="color:var(--accent)">Elite Validator</div>
+          <div class="lb-score">2,840</div>
+          <div class="lb-acc">91%</div>
+        </div>
+        <div class="lb-row">
+          <div class="lb-rank top">02</div>
+          <div class="lb-addr">inj1n2p...7zq8</div>
+          <div class="lb-tier" style="color:var(--accurate)">Verified Validator</div>
+          <div class="lb-score">1,970</div>
+          <div class="lb-acc">87%</div>
+        </div>
+        <div class="lb-row">
+          <div class="lb-rank top">03</div>
+          <div class="lb-addr">inj1r4t...k8w1</div>
+          <div class="lb-tier" style="color:var(--accurate)">Verified Validator</div>
+          <div class="lb-score">1,620</div>
+          <div class="lb-acc">84%</div>
+        </div>
+        <div class="lb-row">
+          <div class="lb-rank">04</div>
+          <div class="lb-addr">inj1abc...xyz9</div>
+          <div class="lb-tier" style="color:var(--accent)">Rising Validator</div>
+          <div class="lb-score" style="color:var(--accent)">340</div>
+          <div class="lb-acc">75%</div>
+        </div>
+        <div class="lb-row">
+          <div class="lb-rank">05</div>
+          <div class="lb-addr">inj1m5q...p2j6</div>
+          <div class="lb-tier">Newcomer</div>
+          <div class="lb-score">120</div>
+          <div class="lb-acc">66%</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">Research<span>Market</span></div>
+  <div class="footer-meta">
+    Built for the Injective Solo AI Builder Sprint · Testnet v1.0<br>
+    <a href="#">Docs</a> · <a href="#">GitHub</a> · <a href="#">Injective Testnet</a>
+  </div>
+</footer>
+
+<script>
+  function scrollToDashboard() {
+    document.getElementById('dashboard').scrollIntoView({ behavior: 'smooth' });
+  }
+  function scrollToDetail() {
+    document.getElementById('detail').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function selectVote(el, type) {
+    const options = el.parentElement.querySelectorAll('.vote-option');
+    options.forEach(o => {
+      o.classList.remove('selected-accurate','selected-false','selected-misleading','selected-unverif');
+    });
+    el.classList.add('selected-' + type);
+  }
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  // Animate stat values on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.animation = 'fadeUp 500ms cubic-bezier(0.16,1,0.3,1) both';
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.stat-card, .market-card, .lb-row').forEach(el => {
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>
