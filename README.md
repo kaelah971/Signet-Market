@@ -4,6 +4,8 @@ A crypto research validation market built on Injective testnet.
 
 ## What is Signet Markets?
 
+Signet Markets is a consumer AI app for crypto research validation. It helps users separate accurate, false, misleading, and unverifiable crypto claims through AI-generated research markets, gasless wallet voting, and reputation-based validation.
+
 Signet Markets turns source-backed crypto research into claims that users can validate. Users vote on whether each claim is **Accurate**, **False**, **Misleading**, or **Unverifiable**. Successful votes are anchored on Injective testnet through a relayer and tied to validator reputation.
 
 It is not a traditional prediction market focused on betting on future outcomes. It is a research validation market. The question is not "What will happen?" — it is "Is this claim accurate based on the available evidence?"

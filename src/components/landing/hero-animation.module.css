@@ -1,0 +1,75 @@
+/* ── Left wall card: at left edge, slides inward while shrinking ── */
+
+.floatLeftWall {
+  animation-name: floatLeftWall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  opacity: 0;
+}
+
+@keyframes floatLeftWall {
+  0%   { transform: perspective(750px) rotateY(50deg) scale(1) translateX(0px);    opacity: 0; }
+  10%  { opacity: 0.9; }
+  88%  { opacity: 0.45; }
+  100% { transform: perspective(750px) rotateY(50deg) scale(0.18) translateX(0px); opacity: 0; }
+}
+
+/* ── Right wall card: at right edge, slides inward while shrinking ── */
+
+.floatRightWall {
+  animation-name: floatRightWall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  opacity: 0;
+}
+
+@keyframes floatRightWall {
+  0%   { transform: perspective(750px) rotateY(-50deg) scale(1) translateX(0px);    opacity: 0; }
+  10%  { opacity: 0.9; }
+  88%  { opacity: 0.45; }
+  100% { transform: perspective(750px) rotateY(-50deg) scale(0.18) translateX(0px); opacity: 0; }
+}
+
+/* ── Ceiling top-right: appears at top-right, slides toward center-top ── */
+
+.floatCeilingTR {
+  animation-name: floatCeilingTR;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  opacity: 0;
+}
+
+@keyframes floatCeilingTR {
+  0%   { transform: perspective(750px) rotateX(-65deg) scale(1)    translate(0px,    0px);  opacity: 0; }
+  10%  { opacity: 0.9; }
+  88%  { opacity: 0.35; }
+  100% { transform: perspective(750px) rotateX(-65deg) scale(0.12) translate(-220px, 60px); opacity: 0; }
+}
+
+/* ── Ceiling top-left: appears at top-left, slides toward center-top ── */
+
+.floatCeilingTL {
+  animation-name: floatCeilingTL;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  opacity: 0;
+}
+
+@keyframes floatCeilingTL {
+  0%   { transform: perspective(750px) rotateX(-65deg) scale(1)    translate(0px,   0px);  opacity: 0; }
+  10%  { opacity: 0.9; }
+  88%  { opacity: 0.35; }
+  100% { transform: perspective(750px) rotateX(-65deg) scale(0.12) translate(220px, 60px); opacity: 0; }
+}
+
+/* ── Reduced motion ── */
+
+@media (prefers-reduced-motion: reduce) {
+  .floatLeftWall,
+  .floatRightWall,
+  .floatCeilingTR,
+  .floatCeilingTL {
+    animation-name: none !important;
+    opacity: 0.12 !important;
+  }
+}
