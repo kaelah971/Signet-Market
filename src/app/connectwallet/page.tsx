@@ -6,6 +6,7 @@ import { ConnectWalletButton } from "@/components/wallet/connect-wallet-button";
 import { shortenInjectiveAddress, useWallet } from "@/components/wallet/wallet-provider";
 import { isAdminWallet } from "@/lib/admin";
 import Link from "next/link";
+import styles from "./connectwallet.module.css";
 
 export default function ConnectWalletPage() {
   const { address, status } = useWallet();
@@ -20,7 +21,10 @@ export default function ConnectWalletPage() {
   }, [isConnected, router]);
 
   return (
-    <main>
+    <main style={{ position: "relative" }}>
+      <div className={styles.bg} aria-hidden="true" />
+      <div className={styles.overlay} aria-hidden="true" />
+
       <nav className="site-nav" aria-label="Main navigation">
         <a className="nav-logo" href="/">
           Signet<span>Markets</span>
@@ -45,25 +49,31 @@ export default function ConnectWalletPage() {
         <ConnectWalletButton />
       </nav>
 
-      <section className="section">
+      <section className="section" style={{ position: "relative", zIndex: 1 }}>
         <div className="profile-inner" style={{ padding: "120px 32px", textAlign: "center" }}>
-          <div className="section-title">Connect Wallet</div>
-          <div className="section-heading">Connect your Injective testnet wallet</div>
-          <p className="hero-sub" style={{ margin: "24px auto 32px" }}>
-            Connect your wallet to vote on research claims and attach Injective testnet proof to your validation.
-          </p>
-
-          {isConnected ? (
-            <div>
-              <div className="success-check" style={{ margin: "0 auto 16px" }}>✓</div>
-              <div className="wallet-note voted-note">
-                Connected: <span>{shortenInjectiveAddress(address)}</span>
-              </div>
-              {isAdmin && <div className="wallet-note vote-message">Admin wallet connected</div>}
+          <div className={styles.card}>
+            <div className="section-title" style={{ color: "rgba(255,255,255,0.65)", marginBottom: 8 }}>
+              CONNECT WALLET
             </div>
-          ) : (
-            <ConnectWalletButton />
-          )}
+            <div className="section-heading" style={{ fontSize: 28, marginBottom: 12 }}>
+              Connect your Injective testnet wallet
+            </div>
+            <p className="hero-sub" style={{ color: "rgba(255,255,255,0.62)", margin: "0 auto 32px" }}>
+              Connect your wallet to vote on research claims and attach Injective testnet proof to your validation.
+            </p>
+
+            {isConnected ? (
+              <div>
+                <div className="success-check" style={{ margin: "0 auto 16px" }}>✓</div>
+                <div className="wallet-note voted-note">
+                  Connected: <span>{shortenInjectiveAddress(address)}</span>
+                </div>
+                {isAdmin && <div className="wallet-note vote-message">Admin wallet connected</div>}
+              </div>
+            ) : (
+              <ConnectWalletButton />
+            )}
+          </div>
         </div>
       </section>
     </main>

@@ -1,0 +1,146 @@
+
+<style>
+  @keyframes floatFloor {
+    0%   { transform: perspective(900px) rotateX(55deg) translateY(0) scale(1);    opacity: 0; }
+    10%  { opacity: 0.75; }
+    85%  { opacity: 0.5; }
+    100% { transform: perspective(900px) rotateX(55deg) translateY(-280px) scale(0.08); opacity: 0; }
+  }
+  @keyframes floatCeiling {
+    0%   { transform: perspective(900px) rotateX(-55deg) translateY(0) scale(1);   opacity: 0; }
+    10%  { opacity: 0.75; }
+    85%  { opacity: 0.45; }
+    100% { transform: perspective(900px) rotateX(-55deg) translateY(280px) scale(0.08); opacity: 0; }
+  }
+  @keyframes floatLeftWall {
+    0%   { transform: perspective(900px) rotateY(42deg) translateX(0) scale(1);    opacity: 0; }
+    10%  { opacity: 0.8; }
+    85%  { opacity: 0.4; }
+    100% { transform: perspective(900px) rotateY(42deg) translateX(340px) scale(0.12); opacity: 0; }
+  }
+  @keyframes floatRightWall {
+    0%   { transform: perspective(900px) rotateY(-42deg) translateX(0) scale(1);   opacity: 0; }
+    10%  { opacity: 0.8; }
+    85%  { opacity: 0.4; }
+    100% { transform: perspective(900px) rotateY(-42deg) translateX(-340px) scale(0.12); opacity: 0; }
+  }
+</style>
+
+<div id="hp" style="position:relative;height:540px;overflow:hidden;background:#06060a;border-radius:10px;">
+  <canvas id="tc" style="position:absolute;inset:0;width:100%;height:100%;display:block;"></canvas>
+  <div id="cl" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;"></div>
+  <div style="position:relative;z-index:10;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 2rem;">
+    <h1 style="font-family:Georgia,'Times New Roman',serif;font-weight:400;font-style:italic;margin:0;line-height:1.08;font-size:clamp(1.7rem,4.2vw,3.6rem);">
+      <span id="sl1" style="display:block;color:#fff;white-space:nowrap;">Turn crypto noise</span>
+      <span id="sl2" style="display:block;color:#fff;white-space:nowrap;">into</span>
+      <span id="sl3" style="display:block;color:#f5c518;white-space:nowrap;">validated signal.</span>
+    </h1>
+    <p style="margin:1.2rem auto 0;max-width:440px;color:rgba(255,255,255,0.5);font-size:0.86rem;line-height:1.65;font-family:system-ui,sans-serif;">
+      AI surfaces fresh crypto research claims. Validators vote on what is accurate, false, misleading, or unverifiable.
+    </p>
+    <div style="display:flex;gap:0.9rem;margin-top:1.6rem;align-items:center;">
+      <button style="background:#f5c518;color:#111;border:none;border-radius:999px;padding:0.6rem 1.4rem;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:system-ui,sans-serif;">Explore Markets →</button>
+      <span style="color:rgba(255,255,255,0.6);font-size:0.85rem;cursor:pointer;font-family:system-ui,sans-serif;">How it works</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const POOL='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
+  const SK=new Set([' ','.',',']);
+  const rc=()=>POOL[Math.floor(Math.random()*POOL.length)];
+
+  function scramble(el,txt,delay){
+    el.innerHTML=txt.split('').map(c=>SK.has(c)?c:`<span style="opacity:.28">${rc()}</span>`).join('');
+    setTimeout(function(){
+      var res=new Array(txt.length).fill(false);
+      var t0=performance.now();
+      var S=44,D=500;
+      function tick(now){
+        var e=now-t0;
+        el.innerHTML=txt.split('').map(function(c,i){
+          if(SK.has(c))return c;
+          if(res[i])return '<span style="opacity:1">'+c+'</span>';
+          var ce=e-i*S;
+          if(ce<0)return '<span style="opacity:.28">'+rc()+'</span>';
+          if(ce>=D){res[i]=true;return '<span style="opacity:1">'+c+'</span>';}
+          return '<span style="opacity:'+(.28+ce/D*.72).toFixed(2)+'">'+rc()+'</span>';
+        }).join('');
+        if(!res.every(Boolean))requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    },delay);
+  }
+
+  scramble(document.getElementById('sl1'),'Turn crypto noise',600);
+  scramble(document.getElementById('sl2'),'into',940);
+  scramble(document.getElementById('sl3'),'validated signal.',1280);
+
+  var cv=document.getElementById('tc');
+  var cx=cv.getContext('2d');
+  var tm=0;
+
+  function rsz(){var w=cv.offsetWidth,h=cv.offsetHeight;if(w>0&&h>0){cv.width=w;cv.height=h;}}
+  rsz();
+  window.addEventListener('resize',rsz);
+
+  function draw(){
+    var W=cv.width,H=cv.height;
+    if(!W||!H){requestAnimationFrame(draw);return;}
+    var vx=W/2,vy=H*0.42;
+    tm+=0.0022;var t=tm%1;
+    cx.fillStyle='#06060a';
+    cx.fillRect(0,0,W,H);
+
+    var rays=[[0,0],[W*0.25,0],[W*0.5,0],[W*0.75,0],[W,0],[W,H*0.33],[W,H*0.67],[W,H],[W*0.75,H],[W*0.5,H],[W*0.25,H],[0,H],[0,H*0.67],[0,H*0.33]];
+    rays.forEach(function(p){
+      cx.strokeStyle='rgba(255,255,255,0.05)';cx.lineWidth=0.6;
+      cx.beginPath();cx.moveTo(vx,vy);cx.lineTo(p[0],p[1]);cx.stroke();
+    });
+
+    for(var i=0;i<14;i++){
+      var d0=((i/14)+t)%1,d=d0*d0;
+      var y=vy+d*(H-vy);
+      cx.strokeStyle='rgba(255,255,255,'+(d0*0.13)+')';cx.lineWidth=0.4+d*0.85;
+      cx.beginPath();cx.moveTo(vx-d*vx,y);cx.lineTo(vx+d*(W-vx),y);cx.stroke();
+    }
+    for(var i=0;i<14;i++){
+      var d0=((i/14)+t)%1,d=d0*d0;
+      var y=vy-d*vy;
+      cx.strokeStyle='rgba(255,255,255,'+(d0*0.09)+')';cx.lineWidth=0.4+d*0.6;
+      cx.beginPath();cx.moveTo(vx-d*vx,y);cx.lineTo(vx+d*(W-vx),y);cx.stroke();
+    }
+    for(var i=0;i<10;i++){
+      var d0=((i/10)+t)%1,d=d0*d0;
+      var yt=vy-d*vy,yb=vy+d*(H-vy);
+      cx.strokeStyle='rgba(255,255,255,'+(d0*0.08)+')';cx.lineWidth=0.4;
+      cx.beginPath();cx.moveTo(vx-d*vx,yt);cx.lineTo(vx-d*vx,yb);cx.stroke();
+      cx.beginPath();cx.moveTo(vx+d*(W-vx),yt);cx.lineTo(vx+d*(W-vx),yb);cx.stroke();
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+
+  var anims={floor:'floatFloor',ceiling:'floatCeiling','left-wall':'floatLeftWall','right-wall':'floatRightWall'};
+  var labels=['BTC/USDT','ETH signal','Noise filter','Validator','Research','Accuracy'];
+  var cards=[
+    {plane:'floor',      p:'bottom:0;left:9%',    w:195,h:115,dur:'11s',delay:'0s',   bg:'#0a1a10'},
+    {plane:'floor',      p:'bottom:0;left:54%',   w:178,h:110,dur:'13s',delay:'4.5s', bg:'#0a1020'},
+    {plane:'left-wall',  p:'left:0;top:26%',      w:112,h:158,dur:'12s',delay:'2s',   bg:'#140a14'},
+    {plane:'right-wall', p:'right:0;top:43%',     w:112,h:158,dur:'10s',delay:'6s',   bg:'#0a1414'},
+    {plane:'ceiling',    p:'top:0;left:16%',      w:188,h:112,dur:'10s',delay:'1.5s', bg:'#14140a'},
+    {plane:'ceiling',    p:'top:0;left:61%',      w:172,h:108,dur:'12s',delay:'7.2s', bg:'#140a0a'},
+  ];
+
+  var cl=document.getElementById('cl');
+  cards.forEach(function(c,i){
+    var d=document.createElement('div');
+    d.style.cssText='position:absolute;'+c.p+';width:'+c.w+'px;height:'+c.h+'px;background:'+c.bg+';border-radius:4px;box-shadow:0 6px 20px rgba(0,0,0,.85);display:flex;align-items:flex-end;padding:5px 7px;animation:'+anims[c.plane]+' '+c.dur+' linear '+c.delay+' infinite;will-change:transform;background-image:url(/images/bg-card-'+(i+1)+'.webp);background-size:cover;background-position:center;';
+    var s=document.createElement('span');
+    s.textContent=labels[i];
+    s.style.cssText='font-family:monospace;font-size:9px;color:rgba(255,255,255,.28);letter-spacing:1px;text-transform:uppercase;';
+    d.appendChild(s);cl.appendChild(d);
+  });
+})();
+</script>

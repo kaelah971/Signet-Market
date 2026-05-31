@@ -1,4 +1,6 @@
 import { ConnectWalletButton } from "@/components/wallet/connect-wallet-button";
+import HeroAnimation from "@/components/landing/hero-animation";
+import ScrambleHeadline from "@/components/landing/scramble-headline";
 import Link from "next/link";
 
 export default function Home() {
@@ -29,15 +31,10 @@ export default function Home() {
       </nav>
 
       <section className="hero" id="top">
-        <div className="hero-grid" />
-        <div className="hero-glow" />
+        <HeroAnimation />
         <div className="hero-inner">
           <div className="hero-eyebrow">PROOF-OF-RESEARCH · INJECTIVE TESTNET</div>
-          <h1 className="hero-headline">
-            Turn crypto noise
-            <br />
-            into <em>validated signal.</em>
-          </h1>
+          <ScrambleHeadline />
           <p className="hero-sub">
             AI surfaces fresh crypto research claims. Validators vote on what is accurate, false, misleading, or unverifiable. Every vote can be verified on Injective testnet.
           </p>
